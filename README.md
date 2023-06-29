@@ -1,6 +1,6 @@
 # Tech Challenge for the Backend
 
-Tech Challenge to create a GraphQL Server with Node.js, Express.js and PostgreSQL.
+Tech Challenge to create a GraphQL Server with Node.js and Express.js, and frontend with sveltejs
 
 We're providing an example server and a server that's already partially completed with devices.  You'll modify the second server for your tech challenge.
 
