@@ -3,8 +3,20 @@ export default `
     data: [CompanyType]
   }
 
+  type PaginationType{
+    totalOfPage: Int
+    page: Int
+    totalOfRecord: Int
+    pageSize: Int
+  }
+
+  type MetaResponse{
+    pagination: PaginationType
+  }
+
   type UsersResponseType {
     data: [UserType]
+    meta: MetaResponse
   }
 
   type RoomType {
@@ -39,6 +51,10 @@ export default `
   type Query {
     Companies(filter: CompanyFilterInput): CompaniesResponseType
     Rooms(filter: RoomFilterInput): RoomsResponseType
-    Users: UsersResponseType
+    Users(page: Int, limit: Int): UsersResponseType
+  }
+
+  type Mutation {
+    addUser(username: String, limit: Int): UsersResponseType
   }
 `;

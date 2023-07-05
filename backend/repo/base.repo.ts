@@ -3,17 +3,35 @@ export const delay = (milliseconds: number): Promise<void> => {
        setTimeout(resolve, milliseconds);
      });
 };
-   
+
+export interface User {
+     id: number;
+     username: string;
+}
 export class BaseRepo<T> {
 
      protected _data: T[];
-
+     
      constructor(data: T[]){
           this._data = data;
      }
 
-     async select(where?: Partial<T>, whereIn?: {fieldName: string, data: any[]}[]): Promise<T[]> {
-          let rs = this._data;
+     public getLength(): number {
+          return this._data.length
+     }
+
+     create(username: string): any{
+          let data = {id:this._data.length+1,username: username, companyIds: []};
+          this._data.push(data)
+          return data;
+     }
+
+     async select(where?: Partial<T>, whereIn?: {fieldName: string, data: any[]}[], page?: number, limit?: number): Promise<T[]> {
+          let rs = this._data
+          if ((page || page==0) && limit) {
+               rs = rs.slice((page*limit),(page*limit+limit)) 
+          }
+
           if (where) {
                rs = Object.entries(where).reduce((acc, [key, value]) => {
                     return acc.filter(r => r[key as keyof T] === value);

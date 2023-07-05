@@ -1,96 +1,116 @@
 <script lang="ts">
-  import Counter from './lib/Counter.svelte'
+  import {request, gql} from "graphql-request"
   import Users from './lib/Users.svelte';
+  import Modal from './lib/Modal.svelte';
 
-const users = [
-  {
-                    "id": 1,
-                    "username": "User1",
-                    "companies": [
-                        {
-                            "id": 10,
-                            "name": "Company 10"
-                        },
-                        {
-                            "id": 18,
-                            "name": "Company 18"
-                        },
-                        {
-                            "id": 32,
-                            "name": "Company 32"
-                        },
-                        {
-                            "id": 34,
-                            "name": "Company 34"
-                        },
-                        {
-                            "id": 69,
-                            "name": "Company 69"
-                        }
-                    ]
-                },
-                {
-                    "id": 2,
-                    "username": "User2",
-                    "companies": [
-                        {
-                            "id": 3,
-                            "name": "Company 3"
-                        },
-                        {
-                            "id": 45,
-                            "name": "Company 45"
-                        },
-                        {
-                            "id": 59,
-                            "name": "Company 59"
-                        },
-                        {
-                            "id": 71,
-                            "name": "Company 71"
-                        }
-                    ]
-                },
-                {
-                    "id": 3,
-                    "username": "User3",
-                    "companies": [
-                        {
-                            "id": 10,
-                            "name": "Company 10"
-                        },
-                        {
-                            "id": 53,
-                            "name": "Company 53"
-                        },
-                        {
-                            "id": 56,
-                            "name": "Company 56"
-                        },
-                        {
-                            "id": 84,
-                            "name": "Company 84"
-                        },
-                        {
-                            "id": 94,
-                            "name": "Company 94"
-                        }
-                    ]
+  let currentPage = 0;
+  let totalPage = 0;
+  let pageLimit = 200;
+  let showModal = false;
+  let username = "Enter a username";
+  let isNewUser = false;
+
+  const query = gql`
+    query getUsers($limit: Int!, $page: Int!){
+        Users(limit: $limit, page: $page) {
+            meta {
+                pagination {
+                    page
+                    pageSize
+                    totalOfPage
+                    totalOfRecord
                 }
-];
+            }
+            data {
+                id
+                username
+                companies{
+                    id
+                    name
+                }
+            }
+        }
+    }
+  `;
 
-</script>
+const mutation = gql`
+  mutation addUser($username: String!, $limit: Int!) {
+    addUser(username: $username, limit: $limit) {
+        meta {
+            pagination {
+                page
+                pageSize
+                totalOfPage
+                totalOfRecord
+            }
+        }
+  }
+}
+`
+   
+    let users:any = [];
+  
+    const loadUser = (limit: number, page: number) => {
+        isNewUser = false;
+        request("http://localhost:4000/graphql",query,{limit: limit, page: page} ).then((response) => {
+        users = response?.Users.data;
+        currentPage = response?.Users.meta.pagination.page;
+        totalPage = response?.Users.meta.pagination.totalOfPage;
+        });
+
+    }
+
+    const createUser = (username: string) => {
+        request("http://localhost:4000/graphql", mutation, {username: username, limit: pageLimit}).then((response) => {
+            currentPage = response?.addUser.meta.pagination.page;
+            showModal = false;
+            changePage(currentPage);
+            isNewUser = true;
+        });
+    }
+
+    const changePage = (newPage:number) => {
+        loadUser(pageLimit, newPage)
+    }
+
+    //default load users
+    changePage(1)
+ </script>
 
 <main>
-
-  <h1>Harvest Tech Challenge</h1>
-
-  <div class="card">
-    <Counter />
+  
+  <h1>Harv Tech Challenge</h1>
+  <button class="btn-right" on:click={() => (showModal = true)}> Add Username</button>
+  {#if isNewUser}
+  <div class="banner">
+        New User <span class="selected"> {username} </span>Added
   </div>
+  {/if}
 
   <Users {users} />
+  {#if showModal}
+  <Modal bind:showModal>
+	<h2 slot="header">
+		<small><em>Add</em> user details</small>
+	</h2>
+        Enter username here: <input type="text" bind:value={username} />
+        <button on:click={()=> {createUser(username), (showModal=false)}}>Create</button>
+    </Modal>
+    {/if}
+  <div class="pagination">
+    <ul>
+        {#each {length: totalPage} as _, i}
+        <li>
 
+            {#if currentPage === i+1}
+            <span class="selected">{i + 1}</span>
+            {:else }
+            <span on:click={() => changePage(i + 1)}>{i + 1}</span>
+            {/if}
+        </li>
+        {/each}
+    </ul>
+  </div>
 </main>
 
 <style>
@@ -109,4 +129,24 @@ const users = [
   .read-the-docs {
     color: #888;
   }
+  .pagination ul > li {
+   display:inline-block;
+   padding:0px 10px;
+  }
+.btn-right {
+    display: block;
+    float: right;
+    background: #66a103;
+}
+.pagination ul > li span{
+    cursor: pointer;
+  }
+
+.selected {
+    font-weight: bolder;
+}
+.banner {
+    background-color: green;
+    display: inline-block;
+}
 </style>

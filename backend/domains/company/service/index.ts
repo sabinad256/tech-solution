@@ -9,12 +9,20 @@ export class CompanyService {
   protected _roomRepo = new RoomRepo();
   protected _userRepo = new UserRepo();
 
-  async getUsers(filter: { username?: string}): Promise<any> {
-    return await this._userRepo.select(filter);
+  async getUsers(filter?: { username?: string}, page?: number, limit?: number): Promise<any> {
+    return await this._userRepo.select(filter, undefined, page-1, limit);
+  }
+
+  getUsersLength(): number {
+    return this._userRepo.getLength()
+  }
+
+  createUser(username: string): any {
+    return this._userRepo.create(username)
   }
 
   async getUserCompanies(filter: { companyIds: number[]}): Promise<any> {
-    return await this._companyRepo.select(undefined, [{ fieldName:'id', data: filter.companyIds }]);
+    return await this._companyRepo.select(undefined,[{ fieldName:'id', data: filter.companyIds }]);
   }
 
   async getCompanies(filter: { name?: string}): Promise<any> {
