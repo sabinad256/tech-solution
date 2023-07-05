@@ -63,3 +63,21 @@ the Users list in frontend shows mock data; Please modify the code; so it can di
 ### Question 4
 
 Please extend the front end that allows users to create new user data (only username for now); and persist into backend by making a new mutation for creating user
+
+
+### Running the backend
+Go to backend folder
+```ts
+npm install
+npm run webpack
+npm run dev
+```
+Backend runs in `http://localhost:5173/`
+
+Go to frontend folder
+```ts
+npm install
+npm run dev
+```
+
+Frontend runs in `http://localhost:5173/`
